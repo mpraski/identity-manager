@@ -36,9 +36,9 @@ const (
 )
 
 func NewVerifiableAddress(
+	identity uuid.UUID,
 	kind VerifiableAddressKind,
 	value string,
-	identity uuid.UUID,
 ) *VerifiableAddress {
 	return &VerifiableAddress{
 		ID:         uuid.New(),

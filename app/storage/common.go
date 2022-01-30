@@ -1,6 +1,17 @@
 package storage
 
-import "github.com/mpraski/identity-manager/app/identity"
+import (
+	"context"
+
+	"github.com/jmoiron/sqlx"
+	"github.com/mpraski/identity-manager/app/identity"
+)
+
+type TransactionManager struct{ db *sqlx.DB }
+
+func (t *TransactionManager) MustBegin(ctx context.Context) *sqlx.Tx {
+	return t.db.MustBeginTx(ctx, nil)
+}
 
 func makeIdentity(
 	i *Identity,

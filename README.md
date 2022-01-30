@@ -4,7 +4,7 @@ An identity & account management system, incorporating multiple authentication s
 
 ## Purpose
 
-This service allows to employ the company internal account management system as an identity provider for the OAuth 2.0 stack. It can be used in tandem with [ORY Hydra](https://github.com/ory/hydra) and [api-gateway](https://github.com/mpraski/api-gateway) to provide a flexible, tested cluster-wide authentication & authorization scheme.
+This service provides centralized identity management. An identity can be associated with an email address, one or more authentication credentials and verifiable addresses. Also, a simple implementation of RBAC with identity-assigned groups is supported. This service is meant to be an entrypoint for all authn/authz operations in your architecture.
 
 ## Builing
 

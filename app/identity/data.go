@@ -28,7 +28,7 @@ type (
 		FirstName string      `validate:"required,safe_name" json:"first_name"`
 		LastName  string      `validate:"required,safe_name" json:"last_name"`
 		Email     null.String `validate:"safe_email" json:"email"`
-		Phone     null.String `validate:"phone" json:"phone"`
+		Phone     null.String `validate:"safe_phone" json:"phone"`
 		BirthDate null.Time   `validate:"birth_date" json:"birth_date"`
 	}
 

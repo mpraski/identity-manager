@@ -75,6 +75,7 @@ func init() {
 	Validate.RegisterAlias("safe_email", "exclude_space,lowercase,email,burner")
 	Validate.RegisterAlias("safe_name", "exclude_space_around,min=2,max=64")
 	Validate.RegisterAlias("safe_token", "exclude_space,len=32")
+	Validate.RegisterAlias("safe_token", "exclude_space")
 }
 
 func validateNullType(field reflect.Value) interface{} {

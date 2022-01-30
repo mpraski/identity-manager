@@ -34,7 +34,7 @@ type (
 	}
 
 	transactionManager interface {
-		Begin(context.Context) (*sqlx.Tx, error)
+		MustBegin(context.Context) *sqlx.Tx
 	}
 
 	identityReader interface {
@@ -110,12 +110,11 @@ func (r *PasswordRegistration) Register(ctx context.Context, req Request) (*iden
 	var (
 		i = identity.New().WithEmail(request.Email)
 		c = identity.
-			NewCredential(identity.PasswordCredential, i.ID).
+			NewCredential(i.ID, identity.PasswordCredential).
 			WithSecret(identity.NewPasswordSecret(h))
-		a = identity.NewVerifiableAddress(
+		a = identity.NewVerifiableAddress(i.ID,
 			identity.EmailAddress,
 			request.Email,
-			i.ID,
 		)
 		d = identity.NewData(i.ID, nil, &identity.SensitiveData{
 			Personal: &identity.PersonalData{
@@ -125,10 +124,7 @@ func (r *PasswordRegistration) Register(ctx context.Context, req Request) (*iden
 		})
 	)
 
-	tx, err := r.transactionManager.Begin(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to begin transaction: %w", err)
-	}
+	tx := r.transactionManager.MustBegin(ctx)
 
 	if err := r.identityWriter.Save(ctx, tx, i); err != nil {
 		_ = tx.Rollback()
@@ -148,6 +144,10 @@ func (r *PasswordRegistration) Register(ctx context.Context, req Request) (*iden
 	if err := r.dataWriter.Save(ctx, tx, d); err != nil {
 		_ = tx.Rollback()
 		return nil, fmt.Errorf("failed to save data: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	i = i.
