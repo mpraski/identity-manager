@@ -69,29 +69,29 @@ func main() {
 
 	var i input
 	if err := envconfig.Process(app, &i); err != nil {
-		log.Fatalf("failed to load input: %v\n", err)
+		log.Fatalf("failed to load input: %v", err)
 	}
 
 	rules, err := rbac.Make(rbacFs)
 	if err != nil {
-		log.Fatalf("failed to load RBAC rules: %v\n", err)
+		log.Fatalf("failed to load RBAC rules: %v", err)
 	}
 
 	db, err := storage.NewPostgres(ctx, i.Database.DSN)
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v\n", err)
+		log.Fatalf("failed to connect to database: %v", err)
 	}
 
 	defer func() {
 		if err = db.Close(); err != nil {
-			log.Fatalf("failed to close the database: %v\n", err)
+			log.Fatalf("failed to close the database: %v", err)
 		}
 	}()
 
 	gsm, err := secret.NewGoogleSecretManager(ctx)
 	if err != nil {
 		//nolint:gocritic // whot
-		log.Fatalf("failed to connect to google secret manager: %v\n", err)
+		log.Fatalf("failed to connect to google secret manager: %v", err)
 	}
 
 	defer gsm.Close()
@@ -100,12 +100,12 @@ func main() {
 
 	aesKey, err := secretSource.Get(ctx, i.Secrets.SensitiveDataKey)
 	if err != nil {
-		log.Fatalf("failed to fetch sensitive data key: %v\n", err)
+		log.Fatalf("failed to fetch sensitive data key: %v", err)
 	}
 
 	aes, err := crypto.NewAES(aesKey)
 	if err != nil {
-		log.Fatalf("failed to parse sensitive data key: %v\n", err)
+		log.Fatalf("failed to parse sensitive data key: %v", err)
 	}
 
 	var (
@@ -153,14 +153,14 @@ func main() {
 
 	observability, err := newObservabilityServer(&i, db)
 	if err != nil {
-		log.Fatalf("failed to setup obvervability: %v\n", err)
+		log.Fatalf("failed to setup obvervability: %v", err)
 	}
 
 	go func() {
 		log.Println("starting observability server at", i.Observability.Address)
 
 		if errs := observability.ListenAndServe(); errs != nil && errs != http.ErrServerClosed {
-			log.Fatalf("failed to start observability server on %s: %v\n", i.Observability.Address, errs)
+			log.Fatalf("failed to start observability server on %s: %v", i.Observability.Address, errs)
 		}
 	}()
 
@@ -180,11 +180,11 @@ func main() {
 		observability.SetKeepAlivesEnabled(false)
 
 		if err := main.Shutdown(ctx); err != nil {
-			log.Fatalf("failed to gracefully shutdown the server: %v\n", err)
+			log.Fatalf("failed to gracefully shutdown the server: %v", err)
 		}
 
 		if err := observability.Shutdown(ctx); err != nil {
-			log.Fatalf("failed to gracefully shutdown observability server: %v\n", err)
+			log.Fatalf("failed to gracefully shutdown observability server: %v", err)
 		}
 
 		close(done)
@@ -194,7 +194,7 @@ func main() {
 	atomic.StoreInt32(&healthy, 1)
 
 	if err := main.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("failed to listen on %s: %v\n", i.Server.Address, err)
+		log.Fatalf("failed to listen on %s: %v", i.Server.Address, err)
 	}
 
 	<-done
