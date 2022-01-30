@@ -33,6 +33,7 @@ type input struct {
 		WriteTimeout    time.Duration `split_words:"true" default:"10s"`
 		IdleTimeout     time.Duration `split_words:"true" default:"15s"`
 		ShutdownTimeout time.Duration `split_words:"true" default:"30s"`
+		RequestTimeout  time.Duration `split_words:"true" default:"45s"`
 	}
 	Secrets struct {
 		SensitiveDataKey string `split_words:"true" required:"true"`
@@ -131,7 +132,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(30 * time.Second))
+	r.Use(middleware.Timeout(i.Server.RequestTimeout))
 
 	r.Mount("/authentication", authService.Router())
 	r.Mount("/registration", registrationService.Router())
@@ -213,7 +214,7 @@ func healthz(db *sqlx.DB) (http.Handler, error) {
 			Name:    "shutdown",
 			Timeout: time.Second,
 			Check: func(ctx context.Context) error {
-				if atomic.LoadInt32(&healthy) == 1 {
+				if atomic.LoadInt32(&healthy) == 0 {
 					return errShutdown
 				}
 
