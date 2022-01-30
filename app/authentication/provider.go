@@ -7,13 +7,13 @@ import (
 )
 
 type (
-	Strategy = string
-
-	Challenge = interface{}
-
 	Provider interface {
 		Authenticate(context.Context, Challenge) (*identity.Identity, error)
 	}
+
+	Challenge = interface{}
+
+	Strategy = string
 )
 
 const (

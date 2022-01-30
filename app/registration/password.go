@@ -116,12 +116,14 @@ func (r *PasswordRegistration) Register(ctx context.Context, req Request) (*iden
 			identity.EmailAddress,
 			request.Email,
 		)
-		d = identity.NewData(i.ID, nil, &identity.SensitiveData{
-			Personal: &identity.PersonalData{
-				FirstName: request.FirstName,
-				LastName:  request.LastName,
-			},
-		})
+		d = identity.NewData(i.ID,
+			&identity.PublicData{},
+			&identity.SensitiveData{
+				Personal: &identity.PersonalData{
+					FirstName: request.FirstName,
+					LastName:  request.LastName,
+				},
+			})
 	)
 
 	tx := r.transactionManager.MustBegin(ctx)

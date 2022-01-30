@@ -48,11 +48,17 @@ func (p *Password) Authenticate(ctx context.Context, challenge Challenge) (*iden
 		return nil, fmt.Errorf("failed to fetch identity by email: %w", err)
 	}
 
+	if !i.IsActive() {
+		return nil, ErrPasswordAuthenticationFailed
+	}
+
+	l := identity.Challenge{
+		"email":    r.Email,
+		"password": r.Password,
+	}
+
 	if c, ok := i.GetCredential(ctx, identity.PasswordCredential); ok {
-		if ok, err := c.Verify(ctx, identity.Challenge{
-			"email":    r.Email,
-			"password": r.Password,
-		}); err == nil && ok {
+		if ok, err := c.Verify(ctx, l); err == nil && ok {
 			return i, nil
 		}
 	}
