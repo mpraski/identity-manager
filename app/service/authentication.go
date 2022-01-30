@@ -28,7 +28,7 @@ func NewAuthentication(password authentication.Provider) *Authentication {
 func (a *Authentication) Router() *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Post("/authentication/password", a.authenticateWithPassword)
+	r.Post("/password", a.authenticateWithPassword)
 
 	return r
 }

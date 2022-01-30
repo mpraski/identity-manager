@@ -12,8 +12,8 @@ type GoogleSecretManager struct {
 	client *secretmanager.Client
 }
 
-func NewGoogleSecretManager() (*GoogleSecretManager, error) {
-	c, err := secretmanager.NewClient(context.Background())
+func NewGoogleSecretManager(ctx context.Context) (*GoogleSecretManager, error) {
+	c, err := secretmanager.NewClient(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize google secret manager client: %w", err)
 	}

@@ -5,9 +5,16 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mpraski/identity-manager/app/identity"
+
+	// The postgresql connector
+	_ "github.com/lib/pq"
 )
 
 type TransactionManager struct{ db *sqlx.DB }
+
+func NewTransactionManager(db *sqlx.DB) *TransactionManager {
+	return &TransactionManager{db: db}
+}
 
 func (t *TransactionManager) MustBegin(ctx context.Context) *sqlx.Tx {
 	return t.db.MustBeginTx(ctx, nil)

@@ -32,6 +32,10 @@ type (
 
 var ErrIncompleteData = errors.New("identity data is incomplete")
 
+func NewDataReader(db *sqlx.DB, aes *crypto.AES) *DataReader {
+	return &DataReader{db: db, aes: aes}
+}
+
 func (s *DataReader) Get(ctx context.Context, id uuid.UUID) (*identity.Data, error) {
 	return s.get(ctx, s.builder().Where(sq.Eq{"id": id.String()}))
 }
@@ -86,6 +90,10 @@ func (s *DataReader) get(ctx context.Context, builder sq.SelectBuilder) (*identi
 		Public:     p,
 		Sensitive:  c,
 	}, nil
+}
+
+func NewDataWriter(aes *crypto.AES) *DataWriter {
+	return &DataWriter{aes: aes}
 }
 
 func (w *DataWriter) Save(ctx context.Context, tx *sqlx.Tx, d *identity.Data) error {

@@ -8,10 +8,6 @@ import (
 )
 
 type (
-	State = string
-
-	Groups = []string
-
 	Identity struct {
 		ID          uuid.UUID           `validate:"required" json:"id"`
 		State       State               `validate:"required,oneof=active inactive" json:"state"`
@@ -23,6 +19,10 @@ type (
 		InsertedAt  time.Time           `validate:"required" json:"inserted_at"`
 		UpdatedAt   time.Time           `validate:"required" json:"updated_at"`
 	}
+
+	State = string
+
+	Groups = []string
 
 	Traits struct {
 		Email string `validate:"required,safe_email" json:"email"`

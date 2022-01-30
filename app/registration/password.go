@@ -63,7 +63,7 @@ var (
 	ErrInvalidRequest = errors.New("invalid  request")
 )
 
-func NewPasswordRegistration(
+func NewPassword(
 	identityReader identityReader,
 	identityWriter identityWriter,
 	credentialWriter credentialWriter,
@@ -126,6 +126,15 @@ func (r *PasswordRegistration) Register(ctx context.Context, req Request) (*iden
 			})
 	)
 
+	i = i.
+		WithCredential(c).
+		WithVerifiableAddress(a).
+		WithData(d)
+
+	if err := i.Validate(ctx); err != nil {
+		return nil, ErrInvalidRequest
+	}
+
 	tx := r.transactionManager.MustBegin(ctx)
 
 	if err := r.identityWriter.Save(ctx, tx, i); err != nil {
@@ -151,11 +160,6 @@ func (r *PasswordRegistration) Register(ctx context.Context, req Request) (*iden
 	if err := tx.Commit(); err != nil {
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
-
-	i = i.
-		WithCredential(c).
-		WithVerifiableAddress(a).
-		WithData(d)
 
 	m := courier.NewMessage(
 		courier.IdentityRegistrationTemplate,

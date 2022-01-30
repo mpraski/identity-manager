@@ -30,8 +30,8 @@ func NewRegistration(password registration.Provider) *Registration {
 func (e *Registration) Router() *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Post("/registration/password", e.registerWithPassword)
-	r.Get("/registration/password/activate", e.activateWithPassword)
+	r.Post("/password", e.registerWithPassword)
+	r.Get("/password/activate", e.activateWithPassword)
 
 	return r
 }

@@ -12,8 +12,6 @@ import (
 	"github.com/mpraski/identity-manager/app/identity"
 
 	sq "github.com/Masterminds/squirrel"
-	// The postgresql connector
-	_ "github.com/lib/pq"
 )
 
 type (
@@ -119,6 +117,8 @@ func (s *IdentityReader) get(ctx context.Context, builder sq.SelectBuilder) (*id
 
 	return makeIdentity(&i, cs, va)
 }
+
+func NewIdentityWriter() *IdentityWriter { return &IdentityWriter{} }
 
 func (w *IdentityWriter) Save(ctx context.Context, tx *sqlx.Tx, i *identity.Identity) error {
 	if err := i.Validate(ctx); err != nil {

@@ -28,7 +28,6 @@ create table credentials (
   password_hash bytea,
   inserted_at timestamp not null,
   updated_at timestamp not null,
-  unique (identity_id, kind),
   foreign key (identity_id) references identities (id) on delete cascade
 );
 
@@ -59,7 +58,6 @@ create table tokens (
   value varchar (32) not null,
   inserted_at timestamp not null,
   updated_at timestamp not null,
-  unique (identity_id, kind),
   foreign key (identity_id) references identities (id) on delete cascade,
   foreign key (verifiable_address_id) references verifiable_addresses (id) on delete cascade
 );
