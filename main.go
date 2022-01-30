@@ -65,8 +65,6 @@ func init() {
 func main() {
 	ctx := context.Background()
 
-	log.SetOutput(os.Stdout)
-
 	var i input
 	if err := envconfig.Process(app, &i); err != nil {
 		log.Fatalf("failed to load input: %v", err)
