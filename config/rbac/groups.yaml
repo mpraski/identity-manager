@@ -1,0 +1,7 @@
+groups:
+  customers:
+    roles: []
+  operators:
+    roles: [identity_manager]
+  admins:
+    roles: [identity_manager]

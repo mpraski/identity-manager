@@ -1,0 +1,7 @@
+roles:
+  identity_manager:
+    scopes:
+      identity:
+        - create
+        - edit
+        - delete
