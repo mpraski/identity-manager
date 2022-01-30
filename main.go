@@ -5,7 +5,6 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -24,6 +23,7 @@ import (
 	"github.com/mpraski/identity-manager/app/secret"
 	"github.com/mpraski/identity-manager/app/service"
 	"github.com/mpraski/identity-manager/app/storage"
+	log "github.com/sirupsen/logrus"
 )
 
 type input struct {
@@ -56,36 +56,45 @@ var (
 	errShutdown = errors.New("shutdown in progress")
 )
 
+func init() {
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.WarnLevel)
+}
+
 func main() {
 	ctx := context.Background()
 
-	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
-	logger.Println("server is starting...")
+	log.SetOutput(os.Stdout)
 
 	var i input
 	if err := envconfig.Process(app, &i); err != nil {
-		logger.Fatalf("failed to load input: %v\n", err)
+		log.Fatalf("failed to load input: %v\n", err)
 	}
 
 	rules, err := rbac.Make(rbacFs)
 	if err != nil {
-		logger.Fatalf("failed to load RBAC rules: %v\n", err)
+		log.Fatalf("failed to load RBAC rules: %v\n", err)
 	}
 
 	db, err := storage.NewPostgres(ctx, i.Database.DSN)
 	if err != nil {
-		logger.Fatalf("failed to connect to database: %v\n", err)
+		log.Fatalf("failed to connect to database: %v\n", err)
 	}
 
 	defer func() {
 		if err = db.Close(); err != nil {
-			logger.Fatalf("failed to close the database: %v\n", err)
+			log.Fatalf("failed to close the database: %v\n", err)
 		}
 	}()
 
 	gsm, err := secret.NewGoogleSecretManager(ctx)
 	if err != nil {
-		logger.Fatalf("failed to connect to google secret manager: %v\n", err)
+		//nolint:gocritic // whot
+		log.Fatalf("failed to connect to google secret manager: %v\n", err)
 	}
 
 	defer gsm.Close()
@@ -94,12 +103,12 @@ func main() {
 
 	aesKey, err := secretSource.Get(ctx, i.Secrets.SensitiveDataKey)
 	if err != nil {
-		logger.Fatalf("failed to fetch sensitive data key: %v\n", err)
+		log.Fatalf("failed to fetch sensitive data key: %v\n", err)
 	}
 
 	aes, err := crypto.NewAES(aesKey)
 	if err != nil {
-		logger.Fatalf("failed to parse sensitive data key: %v\n", err)
+		log.Fatalf("failed to parse sensitive data key: %v\n", err)
 	}
 
 	var (
@@ -147,14 +156,14 @@ func main() {
 
 	observability, err := newObservabilityServer(&i, db)
 	if err != nil {
-		logger.Fatalf("failed to setup obvervability: %v\n", err)
+		log.Fatalf("failed to setup obvervability: %v\n", err)
 	}
 
 	go func() {
-		logger.Println("starting observability server at", i.Observability.Address)
+		log.Println("starting observability server at", i.Observability.Address)
 
 		if errs := observability.ListenAndServe(); errs != nil && errs != http.ErrServerClosed {
-			logger.Fatalf("failed to start observability server on %s: %v\n", i.Observability.Address, errs)
+			log.Fatalf("failed to start observability server on %s: %v\n", i.Observability.Address, errs)
 		}
 	}()
 
@@ -162,7 +171,7 @@ func main() {
 
 	go func() {
 		<-quit
-		logger.Println("server is shutting down...")
+		log.Println("server is shutting down...")
 		atomic.StoreInt32(&healthy, 0)
 
 		var cancel context.CancelFunc
@@ -174,25 +183,25 @@ func main() {
 		observability.SetKeepAlivesEnabled(false)
 
 		if err := main.Shutdown(ctx); err != nil {
-			logger.Fatalf("failed to gracefully shutdown the server: %v\n", err)
+			log.Fatalf("failed to gracefully shutdown the server: %v\n", err)
 		}
 
 		if err := observability.Shutdown(ctx); err != nil {
-			logger.Fatalf("failed to gracefully shutdown observability server: %v\n", err)
+			log.Fatalf("failed to gracefully shutdown observability server: %v\n", err)
 		}
 
 		close(done)
 	}()
 
-	logger.Println("server is ready to handle requests at", i.Server.Address)
+	log.Println("server is ready to handle requests at", i.Server.Address)
 	atomic.StoreInt32(&healthy, 1)
 
 	if err := main.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		logger.Fatalf("failed to listen on %s: %v\n", i.Server.Address, err)
+		log.Fatalf("failed to listen on %s: %v\n", i.Server.Address, err)
 	}
 
 	<-done
-	logger.Println("server stopped")
+	log.Println("server stopped")
 }
 
 func healthz(db *sqlx.DB) (http.Handler, error) {

@@ -15,6 +15,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.4
 	github.com/lindell/go-burner-email-providers v1.0.43
+	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/crypto v0.0.0-20220128200615-198e4374d7ed
 	google.golang.org/genproto v0.0.0-20220126215142-9970aeb2e350
 	gopkg.in/guregu/null.v4 v4.0.0
