@@ -32,7 +32,7 @@ func (p *PasswordSecret) Verify(_ context.Context, challenge Challenge) (bool, e
 		return false, ErrPasswordMissing
 	}
 
-	o, err := crypto.CompareHash(h, string(p.hash))
+	o, err := crypto.ArgonCompareHash(h, string(p.hash))
 	if err != nil {
 		return false, fmt.Errorf("failed to compare hashes: %w", err)
 	}

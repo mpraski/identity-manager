@@ -21,6 +21,10 @@ type (
 		Email     string `validate:"required,email" json:"email"`
 		Password  string `validate:"required" json:"password"`
 	}
+
+	activationRequest struct {
+		Token string `validate:"required,len=32" json:"token"`
+	}
 )
 
 func NewRegistration(password registration.Provider) *Registration {
@@ -76,4 +80,10 @@ func (e *Registration) registerWithPassword(w http.ResponseWriter, r *http.Reque
 }
 
 func (e *Registration) activateWithPassword(w http.ResponseWriter, r *http.Request) {
+	body := activationRequest{Token: chi.URLParam(r, "token")}
+
+	if err := validate.StructCtx(r.Context(), body); err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 }

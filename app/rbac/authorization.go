@@ -38,29 +38,36 @@ func NewDefaultAuthorization(rules *RBAC, groupReader groupReader) *DefaultAutho
 	}
 }
 
-func (a *DefaultAuthorization) HasScopes(ctx context.Context, id uuid.UUID, scopes []string) (bool, error) {
+func (a *DefaultAuthorization) HasScopes(
+	ctx context.Context,
+	identityID uuid.UUID,
+	scopes []string,
+) (bool, error) {
 	if len(scopes) == 0 {
 		return false, nil
 	}
 
-	groups, err := a.groupReader.GetGroups(ctx, id)
+	groups, err := a.groupReader.GetGroups(ctx, identityID)
 	if err != nil {
 		return false, err
 	}
 
-	var c int
+	for _, t := range scopes {
+		var found bool
 
-	for _, g := range groups {
 	outer:
-		for _, s := range a.groupScopes[g] {
-			for _, t := range scopes {
-				if s == t {
-					c++
+		for _, g := range groups {
+			for _, s := range a.groupScopes[g] {
+				if found = t == s; found {
 					break outer
 				}
 			}
 		}
+
+		if !found {
+			return false, nil
+		}
 	}
 
-	return c == len(scopes), nil
+	return true, nil
 }

@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"reflect"
 	"regexp"
-	"strings"
 	"time"
 	"unicode"
 
@@ -52,9 +51,12 @@ func init() {
 	}
 
 	if err := Validate.RegisterValidation("exclude_space_around", func(field validator.FieldLevel) bool {
-		f := field.Field().String()
+		r := []rune(field.Field().String())
+		if len(r) == 0 {
+			return true
+		}
 
-		return len(f) == len(strings.TrimSpace(f))
+		return !(unicode.IsSpace(r[0]) || unicode.IsSpace(r[len(r)-1]))
 	}); err != nil {
 		panic(err)
 	}
@@ -63,7 +65,7 @@ func init() {
 		f := field.Field().Interface()
 
 		if t, ok := f.(time.Time); ok {
-			return time.Since(t).Hours() > 100
+			return t.Before(t)
 		}
 
 		return false
@@ -75,7 +77,6 @@ func init() {
 	Validate.RegisterAlias("safe_email", "exclude_space,lowercase,email,burner")
 	Validate.RegisterAlias("safe_name", "exclude_space_around,min=2,max=64")
 	Validate.RegisterAlias("safe_token", "exclude_space,len=32")
-	Validate.RegisterAlias("safe_token", "exclude_space")
 }
 
 func validateNullType(field reflect.Value) interface{} {

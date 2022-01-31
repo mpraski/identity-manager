@@ -30,7 +30,7 @@ var (
 	}
 )
 
-func Hash(password string, p ArgonParams) ([]byte, error) {
+func ArgonHash(password string, p ArgonParams) ([]byte, error) {
 	n, err := RandomBytes(uint(p.saltLength))
 	if err != nil {
 		return nil, fmt.Errorf("failed to get random bytes: %w", err)
@@ -39,7 +39,7 @@ func Hash(password string, p ArgonParams) ([]byte, error) {
 	return argon2.IDKey([]byte(password), n, p.iterations, p.memory, p.parallelism, p.keyLength), nil
 }
 
-func CompareHash(password, encodedPassword string) (bool, error) {
+func ArgonCompareHash(password, encodedPassword string) (bool, error) {
 	p, salt, hash, err := decodeHash(encodedPassword)
 	if err != nil {
 		return false, fmt.Errorf("failed to decode argon2 hash: %w", err)

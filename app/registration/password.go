@@ -30,7 +30,7 @@ type (
 	}
 
 	PasswordActivationRequest struct {
-		Token string `validate:"required,len=32" json:"token"`
+		Token string `validate:"required,safe_token" json:"token"`
 	}
 
 	transactionManager interface {
@@ -102,7 +102,7 @@ func (r *PasswordRegistration) Register(ctx context.Context, req Request) (*iden
 		return nil, ErrIdentityExists
 	}
 
-	h, err := crypto.Hash(request.Password, crypto.DefaultArgonParams)
+	h, err := crypto.ArgonHash(request.Password, crypto.DefaultArgonParams)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
@@ -185,6 +185,8 @@ func (r *PasswordRegistration) Activate(ctx context.Context, req Request) (*iden
 	if err := identity.Validate.StructCtx(ctx, request); err != nil {
 		return nil, ErrInvalidRequest
 	}
+
+	// Read token, Read address, Read identity, Mark identity as active, address as verified, delete token
 
 	return nil, nil
 }

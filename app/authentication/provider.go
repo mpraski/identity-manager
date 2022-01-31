@@ -12,10 +12,4 @@ type (
 	}
 
 	Challenge = interface{}
-
-	Strategy = string
-)
-
-const (
-	PasswordStrategy Strategy = "password"
 )
