@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/mpraski/identity-manager/app/authentication"
+	"github.com/mpraski/identity-manager/app/storage"
 )
 
 type (
@@ -52,15 +53,18 @@ func (a *Authentication) authenticateWithPassword(w http.ResponseWriter, r *http
 
 	i, err := a.password.Authenticate(r.Context(), &challenge)
 	if err != nil {
+		code := http.StatusInternalServerError
+
 		switch unwrap(err) {
 		case authentication.ErrPasswordChallengeMissing,
 			authentication.ErrPasswordChallengeInvalid:
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		case authentication.ErrPasswordAuthenticationFailed:
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		default:
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			code = http.StatusBadRequest
+		case storage.ErrIdentityNotFound,
+			authentication.ErrPasswordAuthenticationFailed:
+			code = http.StatusNotFound
 		}
+
+		http.Error(w, http.StatusText(code), code)
 
 		return
 	}

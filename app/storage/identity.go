@@ -31,7 +31,7 @@ type (
 )
 
 var (
-	ErrNoIdentityFound       = errors.New("identity not found")
+	ErrIdentityNotFound      = errors.New("identity not found")
 	ErrInvalidPasswordSecret = errors.New("invalid password secret")
 )
 
@@ -49,7 +49,11 @@ func (s *IdentityReader) GetGroups(ctx context.Context, id uuid.UUID) ([]string,
 	const query = `select groups from identities where id = ?`
 
 	var groups []string
-	if err := s.db.QueryRow(query, id.String()).Scan(&groups); err != nil && err != sql.ErrNoRows {
+	if err := s.db.QueryRow(query, id.String()).Scan(&groups); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrIdentityNotFound
+		}
+
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 
@@ -113,6 +117,10 @@ func (s *IdentityReader) get(ctx context.Context, builder sq.SelectBuilder) (*id
 
 	var i Identity
 	if err := s.db.GetContext(ctx, &i, query, args...); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrIdentityNotFound
+		}
+
 		return nil, fmt.Errorf("failed to get identity: %w", err)
 	}
 
@@ -153,11 +161,11 @@ func (w *IdentityWriter) Delete(ctx context.Context, tx *sqlx.Tx, i *identity.Id
 
 	c, err := r.RowsAffected()
 	if err != nil {
-		return ErrNoIdentityFound
+		return ErrIdentityNotFound
 	}
 
 	if c != 1 {
-		return ErrNoIdentityFound
+		return ErrIdentityNotFound
 	}
 
 	return nil

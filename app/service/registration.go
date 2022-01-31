@@ -57,14 +57,16 @@ func (e *Registration) registerWithPassword(w http.ResponseWriter, r *http.Reque
 
 	i, err := e.password.Register(r.Context(), &request)
 	if err != nil {
+		code := http.StatusInternalServerError
+
 		switch unwrap(err) {
 		case registration.ErrIdentityExists:
-			http.Error(w, http.StatusText(http.StatusConflict), http.StatusConflict)
+			code = http.StatusConflict
 		case registration.ErrInvalidRequest:
-			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		default:
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			code = http.StatusBadRequest
 		}
+
+		http.Error(w, http.StatusText(code), code)
 
 		return
 	}

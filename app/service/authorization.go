@@ -2,11 +2,13 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/mpraski/identity-manager/app/rbac"
+	"github.com/mpraski/identity-manager/app/storage"
 )
 
 type (
@@ -53,7 +55,13 @@ func (a *Authorization) authorize(w http.ResponseWriter, r *http.Request) {
 
 	c, err := a.authority.HasScopes(r.Context(), id, body.Scopes)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		code := http.StatusInternalServerError
+		if errors.Is(err, storage.ErrIdentityNotFound) {
+			code = http.StatusNotFound
+		}
+
+		http.Error(w, http.StatusText(code), code)
+
 		return
 	}
 
