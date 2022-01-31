@@ -31,8 +31,8 @@ type (
 )
 
 var (
+	ErrNoIdentityFound       = errors.New("identity not found")
 	ErrInvalidPasswordSecret = errors.New("invalid password secret")
-	ErrNoIdentityFound       = errors.New("no identity found")
 )
 
 func NewIdentityReader(db *sqlx.DB) *IdentityReader { return &IdentityReader{db: db} }
@@ -45,8 +45,19 @@ func (s *IdentityReader) GetByEmail(ctx context.Context, email string) (*identit
 	return s.get(ctx, s.builder().Where(sq.Eq{"email": email}))
 }
 
+func (s *IdentityReader) GetGroups(ctx context.Context, id uuid.UUID) ([]string, error) {
+	const query = `select groups from identities where id = ?`
+
+	var groups []string
+	if err := s.db.QueryRow(query, id.String()).Scan(&groups); err != nil && err != sql.ErrNoRows {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+
+	return groups, nil
+}
+
 func (s *IdentityReader) ExistsByEmail(ctx context.Context, email string) (bool, error) {
-	const query = "select exists(id from identities where email = ?)"
+	const query = `select exists(id from identities where email = ?)`
 
 	var exists bool
 	if err := s.db.QueryRow(query, email).Scan(&exists); err != nil && err != sql.ErrNoRows {

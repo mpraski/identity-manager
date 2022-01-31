@@ -107,15 +107,15 @@ func main() {
 	}
 
 	var (
-		done                 = make(chan bool)
-		quit                 = make(chan os.Signal, 1)
-		txManager            = storage.NewTransactionManager(db)
-		identityReader       = storage.NewIdentityReader(db)
-		identityWriter       = storage.NewIdentityWriter()
-		dataReader           = storage.NewDataReader(db, aes)
-		dataWriter           = storage.NewDataWriter(aes)
-		passwordAuth         = authentication.NewPassword(identityReader)
-		passwordRegistration = registration.NewPassword(
+		done                   = make(chan bool)
+		quit                   = make(chan os.Signal, 1)
+		txManager              = storage.NewTransactionManager(db)
+		identityReader         = storage.NewIdentityReader(db)
+		identityWriter         = storage.NewIdentityWriter()
+		dataReader             = storage.NewDataReader(db, aes)
+		dataWriter             = storage.NewDataWriter(aes)
+		passwordAuthentication = authentication.NewPassword(identityReader)
+		passwordRegistration   = registration.NewPassword(
 			identityReader,
 			identityWriter,
 			nil,
@@ -124,11 +124,12 @@ func main() {
 			txManager,
 			nil,
 		)
-		authService         = service.NewAuthentication(passwordAuth)
-		registrationService = service.NewRegistration(passwordRegistration)
+		rbacAuthorization     = rbac.NewDefaultAuthorization(rules, identityReader)
+		authenticationService = service.NewAuthentication(passwordAuthentication)
+		registrationService   = service.NewRegistration(passwordRegistration)
+		authorizationService  = service.NewAuthorization(rbacAuthorization)
 	)
 
-	fmt.Println(rules)
 	fmt.Println(dataReader)
 
 	r := chi.NewRouter()
@@ -138,7 +139,8 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(i.Server.RequestTimeout))
 
-	r.Mount("/authentication", authService.Router())
+	r.Mount("/authentication", authenticationService.Router())
+	r.Mount("/authorization", authorizationService.Router())
 	r.Mount("/registration", registrationService.Router())
 
 	main := &http.Server{

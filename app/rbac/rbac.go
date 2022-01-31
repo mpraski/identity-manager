@@ -36,8 +36,12 @@ type (
 
 var ErrInvalidRole = errors.New("role is invalid")
 
+func (s ScopedAction) String() string {
+	return s[0] + "." + s[1]
+}
+
 func (s ScopedAction) MarshalJSON() ([]byte, error) {
-	return json.Marshal(s[0] + "." + s[1])
+	return json.Marshal(s.String())
 }
 
 func Make(files fs.FS) (*RBAC, error) {
