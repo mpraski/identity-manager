@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/mpraski/identity-manager/app/courier"
 	"github.com/mpraski/identity-manager/app/crypto"
 	"github.com/mpraski/identity-manager/app/identity"
 )
@@ -19,7 +18,6 @@ type (
 		addressWriter      addressWriter
 		dataWriter         dataWriter
 		transactionManager transactionManager
-		sender             courier.Courier
 	}
 
 	PasswordRequest struct {
@@ -27,10 +25,6 @@ type (
 		LastName  string `validate:"required,safe_name" json:"last_name"`
 		Email     string `validate:"required,safe_email" json:"email"`
 		Password  string `validate:"required,safe_password" json:"password"`
-	}
-
-	PasswordActivationRequest struct {
-		Token string `validate:"required,safe_token" json:"token"`
 	}
 
 	transactionManager interface {
@@ -70,7 +64,6 @@ func NewPassword(
 	addressWriter addressWriter,
 	dataWriter dataWriter,
 	transactionManager transactionManager,
-	sender courier.Courier,
 ) *PasswordRegistration {
 	return &PasswordRegistration{
 		identityReader:     identityReader,
@@ -79,7 +72,6 @@ func NewPassword(
 		addressWriter:      addressWriter,
 		dataWriter:         dataWriter,
 		transactionManager: transactionManager,
-		sender:             sender,
 	}
 }
 
@@ -161,32 +153,5 @@ func (r *PasswordRegistration) Register(ctx context.Context, req Request) (*iden
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	m := courier.NewMessage(
-		courier.IdentityRegistrationTemplate,
-		i.Traits.Email,
-		courier.Variables{
-			"token": a.Token.Value,
-		},
-	)
-
-	if err := r.sender.Deliver(ctx, m); err != nil {
-		return nil, fmt.Errorf("failed to send registration message: %w", err)
-	}
-
 	return i, nil
-}
-
-func (r *PasswordRegistration) Activate(ctx context.Context, req Request) (*identity.Identity, error) {
-	request, ok := req.(*PasswordActivationRequest)
-	if !ok {
-		return nil, ErrInvalidRequest
-	}
-
-	if err := identity.Validate.StructCtx(ctx, request); err != nil {
-		return nil, ErrInvalidRequest
-	}
-
-	// Read token, Read address, Read identity, Mark identity as active, address as verified, delete token
-
-	return nil, nil
 }

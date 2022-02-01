@@ -43,10 +43,10 @@ var (
 	ErrPasswordCredentialMissing = errors.New("password credential is missing")
 )
 
-func NewCredential(identity uuid.UUID, kind CredentialKind) *Credential {
+func NewCredential(identityID uuid.UUID, kind CredentialKind) *Credential {
 	return &Credential{
 		ID:         uuid.New(),
-		IdentityID: identity,
+		IdentityID: identityID,
 		Kind:       kind,
 		InsertedAt: time.Now().UTC(),
 		UpdatedAt:  time.Now().UTC(),

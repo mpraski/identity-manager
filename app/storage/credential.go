@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,4 +20,8 @@ type (
 	CredentialReader struct{}
 
 	CredentialWriter struct{}
+)
+
+var (
+	ErrCredentialNotFound = errors.New("credential not found")
 )

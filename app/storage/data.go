@@ -30,7 +30,10 @@ type (
 	DataWriter struct{ aes *crypto.AES }
 )
 
-var ErrIncompleteData = errors.New("identity data is incomplete")
+var (
+	ErrDataNotFound   = errors.New("data not found")
+	ErrDataIncomplete = errors.New("identity data is incomplete")
+)
 
 func NewDataReader(db *sqlx.DB, aes *crypto.AES) *DataReader {
 	return &DataReader{db: db, aes: aes}
@@ -65,7 +68,7 @@ func (s *DataReader) get(ctx context.Context, builder sq.SelectBuilder) (*identi
 	}
 
 	if d.Public == nil || d.Sensitive == nil {
-		return nil, ErrIncompleteData
+		return nil, ErrDataIncomplete
 	}
 
 	var p *identity.PublicData

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,4 +24,8 @@ type (
 	AddressReader struct{}
 
 	AddressWriter struct{}
+)
+
+var (
+	ErrAddressNotFound = errors.New("address not found")
 )

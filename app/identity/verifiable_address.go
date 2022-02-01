@@ -36,16 +36,18 @@ const (
 )
 
 func NewVerifiableAddress(
-	identity uuid.UUID,
+	identityID uuid.UUID,
 	kind VerifiableAddressKind,
 	value string,
 ) *VerifiableAddress {
+	id := uuid.New()
+
 	return &VerifiableAddress{
-		ID:         uuid.New(),
-		IdentityID: identity,
+		ID:         id,
+		IdentityID: identityID,
 		Kind:       kind,
 		State:      VerificationPending,
-		Token:      NewToken(AddressVerificationToken),
+		Token:      NewToken(AddressVerificationToken).WithAddressID(id),
 		Value:      value,
 		InsertedAt: time.Now().UTC(),
 		UpdatedAt:  time.Now().UTC(),

@@ -12,7 +12,7 @@ import (
 
 type (
 	Registration struct {
-		password registration.Provider
+		provider registration.Provider
 	}
 
 	registrationRequest struct {
@@ -21,21 +21,16 @@ type (
 		Email     string `validate:"required,email" json:"email"`
 		Password  string `validate:"required" json:"password"`
 	}
-
-	activationRequest struct {
-		Token string `validate:"required,len=32" json:"token"`
-	}
 )
 
-func NewRegistration(password registration.Provider) *Registration {
-	return &Registration{password: password}
+func NewRegistration(provider registration.Provider) *Registration {
+	return &Registration{provider: provider}
 }
 
 func (e *Registration) Router() *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Post("/password", e.registerWithPassword)
-	r.Get("/password/activate", e.activateWithPassword)
 
 	return r
 }
@@ -59,7 +54,7 @@ func (e *Registration) registerWithPassword(w http.ResponseWriter, r *http.Reque
 		Password:  strings.TrimSpace(body.Password),
 	}
 
-	i, err := e.password.Register(r.Context(), &request)
+	i, err := e.provider.Register(r.Context(), &request)
 	if err != nil {
 		code := http.StatusInternalServerError
 
@@ -77,13 +72,4 @@ func (e *Registration) registerWithPassword(w http.ResponseWriter, r *http.Reque
 
 	render.Status(r, http.StatusCreated)
 	render.JSON(w, r, i)
-}
-
-func (e *Registration) activateWithPassword(w http.ResponseWriter, r *http.Request) {
-	body := activationRequest{Token: chi.URLParam(r, "token")}
-
-	if err := validate.StructCtx(r.Context(), body); err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
 }

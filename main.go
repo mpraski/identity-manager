@@ -16,6 +16,7 @@ import (
 	"github.com/hellofresh/health-go/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/kelseyhightower/envconfig"
+	"github.com/mpraski/identity-manager/app/activation"
 	"github.com/mpraski/identity-manager/app/authentication"
 	"github.com/mpraski/identity-manager/app/crypto"
 	"github.com/mpraski/identity-manager/app/rbac"
@@ -122,11 +123,19 @@ func main() {
 			nil,
 			dataWriter,
 			txManager,
+		)
+		defaultActivation = activation.NewDefaultActivation(
+			identityReader,
+			identityWriter,
 			nil,
+			nil,
+			nil,
+			txManager,
 		)
 		rbacAuthorization     = rbac.NewDefaultAuthorization(rules, identityReader)
 		authenticationService = service.NewAuthentication(passwordAuthentication)
 		registrationService   = service.NewRegistration(passwordRegistration)
+		activationService     = service.NewActivation(defaultActivation)
 		authorizationService  = service.NewAuthorization(rbacAuthorization)
 	)
 
@@ -142,6 +151,7 @@ func main() {
 	r.Mount("/authentication", authenticationService.Router())
 	r.Mount("/authorization", authorizationService.Router())
 	r.Mount("/registration", registrationService.Router())
+	r.Mount("/activation", activationService.Router())
 
 	main := &http.Server{
 		Addr:         i.Server.Address,

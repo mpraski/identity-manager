@@ -45,10 +45,10 @@ type (
 	}
 )
 
-func NewData(identity uuid.UUID, public *PublicData, sensitive *SensitiveData) *Data {
+func NewData(identityID uuid.UUID, public *PublicData, sensitive *SensitiveData) *Data {
 	return &Data{
 		ID:         uuid.New(),
-		IdentityID: identity,
+		IdentityID: identityID,
 		Public:     public,
 		Sensitive:  sensitive,
 	}

@@ -9,7 +9,6 @@ import (
 type (
 	Provider interface {
 		Register(context.Context, Request) (*identity.Identity, error)
-		Activate(context.Context, Request) (*identity.Identity, error)
 	}
 
 	Request = interface{}
