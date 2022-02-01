@@ -38,7 +38,7 @@ func NewAddressWriter() *AddressWriter { return &AddressWriter{} }
 
 func (w *AddressWriter) Save(ctx context.Context, tx *sqlx.Tx, a *identity.VerifiableAddress) error {
 	const query = `
-		insert into verifiable_addresses (id, identity_id, public, sensitive)
+		insert into verifiable_addresses (id, identity_id, kind, state, value, verified, verified_at, inserted_at, updated_at)
 			values(:id, :identity_id, :kind, :state, :value, :verified, :verified_at, :inserted_at, :updated_at) 
 		on conflict (identity_id) do
 			update set kind = :kind,
@@ -46,7 +46,6 @@ func (w *AddressWriter) Save(ctx context.Context, tx *sqlx.Tx, a *identity.Verif
 				value = :value,
 				verified = :verified,
 				verified_at = :verified_at,
-				inserted_at = :inserted_at,
 				updated_at = :updated_at;
 		`
 

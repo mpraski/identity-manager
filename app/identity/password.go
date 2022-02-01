@@ -18,6 +18,8 @@ func NewPasswordSecret(hash []byte) *PasswordSecret {
 	return &PasswordSecret{hash: hash}
 }
 
+func (p *PasswordSecret) Hash() []byte { return p.hash }
+
 func (p *PasswordSecret) Validate(ctx context.Context) error {
 	return Validate.StructCtx(ctx, p)
 }
