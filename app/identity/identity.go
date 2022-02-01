@@ -13,7 +13,7 @@ type (
 		ID          uuid.UUID           `validate:"required" json:"id"`
 		State       State               `validate:"required,oneof=active inactive" json:"state"`
 		Groups      Groups              `validate:"required,unique,len>0" json:"groups"`
-		Traits      Traits              `json:"traits"`
+		Email       null.String         `validate:"safe_email" json:"email"`
 		Credentials Credentials         `validate:"required,len>0" json:"-"`
 		Addresses   []VerifiableAddress `validate:"required,len>0" json:"addresses"`
 		Data        *Data               `json:"-"`
@@ -24,10 +24,6 @@ type (
 	State = string
 
 	Groups = []string
-
-	Traits struct {
-		Email null.String `validate:"safe_email" json:"email"`
-	}
 )
 
 const (
@@ -53,7 +49,7 @@ func (i *Identity) WithGroups(groups []string) *Identity {
 }
 
 func (i *Identity) WithEmail(email string) *Identity {
-	i.Traits.Email = null.StringFrom(email)
+	i.Email = null.StringFrom(email)
 	return i
 }
 

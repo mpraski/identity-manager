@@ -84,20 +84,34 @@ func (s *IdentityReader) builder() sq.SelectBuilder {
 }
 
 func (s *IdentityReader) get(ctx context.Context, builder sq.SelectBuilder) (*identity.Identity, error) {
-	const getAddresses = `
-		select
-			a.id,
-			a.identity_id,
-			a.kind,
-			a.state,
-			a.value,
-			a.verified,
-			a.verified_at,
-			a.inserted_at,
-			a.updated_at
-		from verifiable_addresses a
-		where a.identity_id = ?
-	`
+	const (
+		getCredentials = `
+			select
+				c.id,
+				c.identity_id,
+				c.kind,
+				c.password_hash,
+				c.inserted_at,
+				c.updated_at
+			from credentials c
+			where c.identity_id = ?
+		`
+
+		getAddresses = `
+			select
+				a.id,
+				a.identity_id,
+				a.kind,
+				a.state,
+				a.value,
+				a.verified,
+				a.verified_at,
+				a.inserted_at,
+				a.updated_at
+			from verifiable_addresses a
+			where a.identity_id = ?
+		`
+	)
 
 	query, args, err := builder.ToSql()
 	if err != nil {
@@ -113,19 +127,47 @@ func (s *IdentityReader) get(ctx context.Context, builder sq.SelectBuilder) (*id
 		return nil, fmt.Errorf("failed to get identity: %w", err)
 	}
 
+	var cs []Credential
+	if err := s.db.SelectContext(ctx, &cs, getCredentials, i.ID.String()); err != nil {
+		return nil, fmt.Errorf("failed to get credentials: %w", err)
+	}
+
 	var va []VerifiableAddress
 	if err := s.db.SelectContext(ctx, &va, getAddresses, i.ID.String()); err != nil {
 		return nil, fmt.Errorf("failed to get addresses: %w", err)
 	}
 
-	return makeIdentity(&i, va)
+	return makeIdentity(&i, cs, va)
 }
 
 func NewIdentityWriter() *IdentityWriter { return &IdentityWriter{} }
 
 func (w *IdentityWriter) Save(ctx context.Context, tx *sqlx.Tx, i *identity.Identity) error {
+	const query = `
+		insert into identities (id, state, email, groups, inserted_at, updated_at)
+			values(:id, :state, :email, :groups, :inserted_at, :updated_at) 
+		on conflict (id) do
+			update set state = :state,
+				email = :email,
+				groups = :groups,
+				updated_at = :updated_at;
+		`
+
 	if err := i.Validate(ctx); err != nil {
 		return fmt.Errorf("failed to validate identity: %w", err)
+	}
+
+	id := Identity{
+		ID:         i.ID,
+		State:      i.State,
+		Email:      i.Email,
+		Groups:     i.Groups,
+		InsertedAt: i.InsertedAt,
+		UpdatedAt:  i.UpdatedAt,
+	}
+
+	if _, err := tx.NamedExecContext(ctx, query, id); err != nil {
+		return fmt.Errorf("failed to save identity: %w", err)
 	}
 
 	return nil

@@ -28,6 +28,7 @@ create table credentials (
   password_hash bytea,
   inserted_at timestamp not null,
   updated_at timestamp not null,
+  unique (identity_id, kind),
   foreign key (identity_id) references identities (id) on delete cascade
 );
 
