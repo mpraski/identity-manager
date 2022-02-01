@@ -10,19 +10,20 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/mpraski/identity-manager/app/identity"
+	"gopkg.in/guregu/null.v4"
 
 	sq "github.com/Masterminds/squirrel"
 )
 
 type (
 	Identity struct {
-		ID         uuid.UUID `db:"id"`
-		State      string    `db:"state"`
-		Groups     []string  `db:"groups"`
-		Email      string    `db:"email"`
-		Data       []byte    `db:"data"`
-		InsertedAt time.Time `db:"inserted_at"`
-		UpdatedAt  time.Time `db:"updated_at"`
+		ID         uuid.UUID   `db:"id"`
+		State      string      `db:"state"`
+		Groups     []string    `db:"groups"`
+		Email      null.String `db:"email"`
+		Data       []byte      `db:"data"`
+		InsertedAt time.Time   `db:"inserted_at"`
+		UpdatedAt  time.Time   `db:"updated_at"`
 	}
 
 	IdentityReader struct{ db *sqlx.DB }
@@ -72,43 +73,31 @@ func (s *IdentityReader) ExistsByEmail(ctx context.Context, email string) (bool,
 }
 
 func (s *IdentityReader) builder() sq.SelectBuilder {
-	return sq.Select("id",
+	return sq.Select(
+		"id",
 		"state",
 		"email",
+		"groups",
 		"inserted_at",
 		"updated_at",
 	).From("identities")
 }
 
 func (s *IdentityReader) get(ctx context.Context, builder sq.SelectBuilder) (*identity.Identity, error) {
-	const (
-		getCredentials = `
-			select
-				c.id,
-				c.identity_id,
-				c.kind,
-				c.password_hash,
-				c.inserted_at,
-				c.updated_at
-			from credentials c
-			where c.identity_id = ?
-		`
-
-		getAddresses = `
-			select
-				a.id,
-				a.identity_id,
-				a.kind,
-				a.state,
-				a.value,
-				a.verified,
-				a.inserted_at,
-				a.inserted_at,
-				a.updated_at
-			from verifiable_addresses a
-			where a.identity_id = ?
-		`
-	)
+	const getAddresses = `
+		select
+			a.id,
+			a.identity_id,
+			a.kind,
+			a.state,
+			a.value,
+			a.verified,
+			a.verified_at,
+			a.inserted_at,
+			a.updated_at
+		from verifiable_addresses a
+		where a.identity_id = ?
+	`
 
 	query, args, err := builder.ToSql()
 	if err != nil {
@@ -124,17 +113,12 @@ func (s *IdentityReader) get(ctx context.Context, builder sq.SelectBuilder) (*id
 		return nil, fmt.Errorf("failed to get identity: %w", err)
 	}
 
-	var cs []Credential
-	if err := s.db.SelectContext(ctx, &cs, getCredentials, i.ID.String()); err != nil {
-		return nil, fmt.Errorf("failed to get credentials: %w", err)
-	}
-
 	var va []VerifiableAddress
 	if err := s.db.SelectContext(ctx, &va, getAddresses, i.ID.String()); err != nil {
-		return nil, fmt.Errorf("failed to get credentials: %w", err)
+		return nil, fmt.Errorf("failed to get addresses: %w", err)
 	}
 
-	return makeIdentity(&i, cs, va)
+	return makeIdentity(&i, va)
 }
 
 func NewIdentityWriter() *IdentityWriter { return &IdentityWriter{} }

@@ -3,7 +3,7 @@ create extension if not exists "uuid-ossp";
 create table identities (
   id uuid primary key,
   state varchar (16) not null,
-  email varchar (255) not null unique,
+  email varchar (255) unique,
   groups varchar [] not null,
   inserted_at timestamp not null,
   updated_at timestamp not null

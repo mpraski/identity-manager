@@ -5,14 +5,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gopkg.in/guregu/null.v4"
 )
 
 type (
 	Identity struct {
 		ID          uuid.UUID           `validate:"required" json:"id"`
 		State       State               `validate:"required,oneof=active inactive" json:"state"`
-		Groups      Groups              `validate:"required,unique" json:"groups"`
-		Traits      Traits              `validate:"required" json:"traits"`
+		Groups      Groups              `validate:"required,unique,len>0" json:"groups"`
+		Traits      Traits              `json:"traits"`
 		Credentials Credentials         `validate:"required,len>0" json:"-"`
 		Addresses   []VerifiableAddress `validate:"required,len>0" json:"addresses"`
 		Data        *Data               `json:"-"`
@@ -25,7 +26,7 @@ type (
 	Groups = []string
 
 	Traits struct {
-		Email string `validate:"required,safe_email" json:"email"`
+		Email null.String `validate:"safe_email" json:"email"`
 	}
 )
 
@@ -52,7 +53,7 @@ func (i *Identity) WithGroups(groups []string) *Identity {
 }
 
 func (i *Identity) WithEmail(email string) *Identity {
-	i.Traits.Email = email
+	i.Traits.Email = null.StringFrom(email)
 	return i
 }
 

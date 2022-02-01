@@ -22,35 +22,8 @@ func (t *TransactionManager) MustBegin(ctx context.Context) *sqlx.Tx {
 
 func makeIdentity(
 	i *Identity,
-	cs []Credential,
 	va []VerifiableAddress,
 ) (*identity.Identity, error) {
-	creds := make(identity.Credentials)
-
-	for i := range cs {
-		var (
-			c      = &cs[i]
-			secret = identity.Secret(nil)
-		)
-
-		if c.Kind == identity.PasswordCredential {
-			if c.PasswordHash == nil {
-				return nil, ErrInvalidPasswordSecret
-			}
-
-			secret = identity.NewPasswordSecret(c.PasswordHash)
-		}
-
-		creds[c.Kind] = identity.Credential{
-			ID:         c.ID,
-			IdentityID: c.IdentityID,
-			Kind:       c.Kind,
-			Secret:     secret,
-			InsertedAt: c.InsertedAt,
-			UpdatedAt:  c.UpdatedAt,
-		}
-	}
-
 	addresses := make([]identity.VerifiableAddress, 0, len(va))
 
 	for i := range va {
@@ -75,7 +48,7 @@ func makeIdentity(
 		Groups:      i.Groups,
 		Traits:      identity.Traits{Email: i.Email},
 		Addresses:   addresses,
-		Credentials: creds,
+		Credentials: make(identity.Credentials),
 		InsertedAt:  i.InsertedAt,
 		UpdatedAt:   i.UpdatedAt,
 	}, nil
