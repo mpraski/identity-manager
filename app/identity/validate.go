@@ -61,11 +61,14 @@ func init() {
 		panic(err)
 	}
 
-	if err := Validate.RegisterValidation("birth_date", func(field validator.FieldLevel) bool {
-		f := field.Field().Interface()
+	if err := Validate.RegisterValidation("past_date", func(field validator.FieldLevel) bool {
+		var (
+			f = field.Field().Interface()
+			n = time.Now().UTC()
+		)
 
 		if t, ok := f.(time.Time); ok {
-			return t.Before(t)
+			return t.Equal(n) || t.Before(n)
 		}
 
 		return false

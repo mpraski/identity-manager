@@ -1,6 +1,7 @@
 package identity
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,9 +17,9 @@ type (
 		Token      *Token                `json:"-"`
 		Value      string                `validate:"required,min=4,max=255" json:"value"`
 		Verified   bool                  `validate:"required" json:"verified"`
-		VerifiedAt null.Time             `json:"verified_at"`
-		InsertedAt time.Time             `validate:"required" json:"inserted_at"`
-		UpdatedAt  time.Time             `validate:"required" json:"updated_at"`
+		VerifiedAt null.Time             `validate:"past_date" json:"verified_at"`
+		InsertedAt time.Time             `validate:"required,past_date" json:"inserted_at"`
+		UpdatedAt  time.Time             `validate:"required,past_date" json:"updated_at"`
 	}
 
 	VerifiableAddressKind = string
@@ -47,9 +48,13 @@ func NewVerifiableAddress(
 		IdentityID: identityID,
 		Kind:       kind,
 		State:      VerificationPending,
-		Token:      NewToken(AddressVerificationToken).WithAddressID(id),
+		Token:      NewToken(identityID, AddressVerificationToken).WithAddressID(id),
 		Value:      value,
 		InsertedAt: time.Now().UTC(),
 		UpdatedAt:  time.Now().UTC(),
 	}
+}
+
+func (a *VerifiableAddress) Validate(ctx context.Context) error {
+	return Validate.StructCtx(ctx, a)
 }

@@ -15,8 +15,8 @@ type (
 		IdentityID uuid.UUID      `validate:"required" json:"identity_id"`
 		Kind       CredentialKind `validate:"required,oneof=password oidc totp" json:"kind"`
 		Secret     Secret         `validate:"required" json:"-"`
-		InsertedAt time.Time      `validate:"required" json:"inserted_at"`
-		UpdatedAt  time.Time      `validate:"required" json:"updated_at"`
+		InsertedAt time.Time      `validate:"required,past_date" json:"inserted_at"`
+		UpdatedAt  time.Time      `validate:"required,past_date" json:"updated_at"`
 	}
 
 	CredentialKind = string

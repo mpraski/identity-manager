@@ -15,8 +15,8 @@ type (
 		VerifiableAddressID uuid.UUID `validate:"required" json:"verifiable_address_id"`
 		Kind                TokenKind `validate:"required,oneof=address_verification" json:"kind"`
 		Value               string    `validate:"required,safe_token" json:"-"`
-		InsertedAt          time.Time `validate:"required" json:"inserted_at"`
-		UpdatedAt           time.Time `validate:"required" json:"updated_at"`
+		InsertedAt          time.Time `validate:"required,past_date" json:"inserted_at"`
+		UpdatedAt           time.Time `validate:"required,past_date" json:"updated_at"`
 	}
 
 	TokenKind = string
@@ -27,9 +27,10 @@ const (
 	AddressVerificationToken TokenKind = "address_verification"
 )
 
-func NewToken(kind TokenKind) *Token {
+func NewToken(identityID uuid.UUID, kind TokenKind) *Token {
 	return &Token{
 		ID:         uuid.New(),
+		IdentityID: identityID,
 		Kind:       kind,
 		Value:      crypto.RandomString(),
 		InsertedAt: time.Now().UTC(),

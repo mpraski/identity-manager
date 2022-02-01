@@ -29,7 +29,7 @@ type (
 		LastName  string      `validate:"required,safe_name" json:"last_name"`
 		Email     null.String `validate:"safe_email" json:"email"`
 		Phone     null.String `validate:"safe_phone" json:"phone"`
-		BirthDate null.Time   `validate:"birth_date" json:"birth_date"`
+		BirthDate null.Time   `validate:"past_date" json:"birth_date"`
 	}
 
 	AddressData struct {

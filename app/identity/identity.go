@@ -16,8 +16,8 @@ type (
 		Credentials Credentials         `validate:"required,len>0" json:"-"`
 		Addresses   []VerifiableAddress `validate:"required,len>0" json:"addresses"`
 		Data        *Data               `json:"-"`
-		InsertedAt  time.Time           `validate:"required" json:"inserted_at"`
-		UpdatedAt   time.Time           `validate:"required" json:"updated_at"`
+		InsertedAt  time.Time           `validate:"required,past_date" json:"inserted_at"`
+		UpdatedAt   time.Time           `validate:"required,past_date" json:"updated_at"`
 	}
 
 	State = string
