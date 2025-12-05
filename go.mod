@@ -15,7 +15,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.10.4
 	github.com/lindell/go-burner-email-providers v1.0.43
-	github.com/sirupsen/logrus v1.8.1
+	github.com/sirupsen/logrus v1.8.3
 	golang.org/x/crypto v0.0.0-20220128200615-198e4374d7ed
 	google.golang.org/genproto v0.0.0-20220126215142-9970aeb2e350
 	gopkg.in/guregu/null.v4 v4.0.0
@@ -38,7 +38,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.0.0 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
-	golang.org/x/sys v0.0.0-20210908233432-aa78b53d3365 // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/api v0.57.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
