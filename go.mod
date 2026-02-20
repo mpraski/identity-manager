@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/secretmanager v1.0.0
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/go-chi/chi v1.5.4
-	github.com/go-chi/chi/v5 v5.0.7
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/render v1.0.1
 	github.com/go-playground/validator/v10 v10.10.0
 	github.com/google/uuid v1.1.2
